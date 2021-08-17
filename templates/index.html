@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+    <style>
+        .header{
+            border: solid 1px black;
+            height: 60px;
+            width: 100%;
+            font-size: 30px;
+            text-align: center;
+        }
+        .flex-container{
+            display: flex;
+            min-height: 800px;
+        }
+        .actions{
+            border: solid 1px black;
+            height: 100%;
+            width: 20%;
+            font-size: 30px;
+            text-align: center;
+            flex-grow: 1
+        }
+        .content{
+            border: solid 1px black;
+            height: 100%;
+            width: 20%;
+            font-size: 30px;
+            text-align: center;
+            flex-grow: 8
+        }
+        .button{
+            display: block;
+            width: 80%;
+            margin: 20px;
+        }
+        td {
+            border: solid 1px black;
+            min-width: 300px;
+        }
+    </style>
+    </head>
+    <body>
+
+        <div class="header">
+            <div class="title">TODO</div>
+        </div>
+
+        <div class="flex-container">
+            <div class="actions">
+                <button class="button">Add</button>
+                <button class="button">List</button>
+            </div>
+
+            <div class="content">
+                <form action="/graphql" method="post">
+                    <input type="text" name="query" value="query" hidden>
+                    <input type="text" name="title" value="sssss">
+                    <input type="text" name="desc" value="sssssss">
+                    <button type="submit">ok</button>
+                </form>
+                <hr>
+                <table>
+                {% for todo in todos %}
+                    <tr>
+                        <td>{{todo._values.mongo_id.value}}</td>
+                        <td>{{todo._values.title.value}}</td>
+                        <td>{{todo._values.desc.value}}</td>
+                    </tr>
+                {% endfor%}
+                </table>
+            </div>
+        </div>
+
+        <div class="footer"></div>
+    </body>
+</html>

@@ -1,0 +1,23 @@
+
+type Todo {
+    id: ID!
+    title: String!
+    desc: String!
+}
+type TodoResult {
+    success: Boolean!
+    errors: [String]
+    post: Todo
+}
+type TodosResult {
+    success: Boolean!
+    errors: [String]
+    post: [Todo]
+}
+type Query {
+    listTodos: TodosResult!
+    getTodo(id: ID!): TodoResult!
+}
+schema {
+    query: Query
+}
