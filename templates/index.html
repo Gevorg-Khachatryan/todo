@@ -35,9 +35,12 @@
             width: 80%;
             margin: 20px;
         }
-        td {
+        table,tr {
+            border-collapse: collapse;
             border: solid 1px black;
-            min-width: 300px;
+            width: 90%;
+            margin: auto
+        ;
         }
     </style>
     </head>
@@ -61,18 +64,74 @@
                     <button type="submit">ok</button>
                 </form>
                 <hr>
-                <table>
-                {% for todo in todos %}
-                    <tr>
-                        <td>{{todo._values.mongo_id.value}}</td>
-                        <td>{{todo._values.title.value}}</td>
-                        <td>{{todo._values.desc.value}}</td>
-                    </tr>
-                {% endfor%}
+                <table id="list_todos">
+
                 </table>
             </div>
         </div>
 
         <div class="footer"></div>
     </body>
+<script>
+    fetch('/graphql', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+           'Accept': 'application/json',
+         },
+         body: JSON.stringify({query: "{ listTodos {success errors post {id title desc } }}"})
+        })
+        .then(r => r.json())
+        .then(data => f(data))
+        // .then(data => console.log('data returned:', data));
+function f(data){
+        console.log(data)
+        let success
+        if (data.listTodos) {
+            success = data.listTodos.success
+        }else{
+            console.log(data)
+            success = data.getTodo.success
+        }
+    let list_todos = document.getElementById('list_todos')
+    if (success){
+        let todos = data.listTodos.post
+        todos.forEach((element, index, array) => {
+            list_todos.innerHTML += '<tr class="info" '+ 'data-id="'+ element.id +'" >' +
+                                    '<td>'+ element.title +'</td>' +
+                                    '<td>'+ element.desc +'</td>' +
+                                    '<td><select> ' +
+                                        '<option class="complete" >Completed</option>' +
+                                        '<option class="uncomplete" >Uncompleted</option>' +
+                                        '<option class="delete" >Delete</option>' +
+                                    '</select></td>'+
+                                    '</tr>'
+        })
+    }
+    console.log(data)
+    console.log(data.listTodos)
+    let elements = document.getElementsByClassName("info")
+    console.log(elements)
+    for (var i = 0; i < elements.length; i++) {
+
+        elements[i].addEventListener('click', (element) => {
+        console.log(element.target.parentElement)
+        console.log(element.target.parentElement.dataset.id)
+        fetch('/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({query: '{ getTodo (id: "'+ element.target.parentElement.dataset.id +'")' +
+                    ' { post { id title desc } success errors } }',
+
+            })
+            })
+            .then(r => r.json())
+            // .then(data => f(data))
+        })
+    }
+}
+</script>
 </html>
