@@ -6,6 +6,7 @@ class Todo(ObjectType):
     id = graphene.ID()
     title = graphene.String()
     desc = graphene.String()
+    completed = graphene.Boolean()
 
 
 class TodosResult(ObjectType):
@@ -59,5 +60,86 @@ class Query(ObjectType):
         return payload
 
 
-schema = Schema(query=Query)
+class TodoInput(graphene.InputObjectType):
+    id = graphene.String()
+    title = graphene.String()
+    desc = graphene.String()
+
+
+class CreateTodo(graphene.Mutation):
+    class Arguments:
+        todo = TodoInput()
+
+    Output = Todo
+
+    def mutate(root, info,todo):
+        print('////////////////////////1')
+        new_todo = TodoModel(title=todo.title, desc=todo.desc)
+        new_todo.save()
+        return new_todo
+
+
+class UpdateTodo(graphene.Mutation):
+    class Arguments:
+        # id = graphene.String()
+        todo = TodoInput()
+
+    Output = Todo
+
+    def mutate(root, info, todo):
+        print('////////////////////////2')
+        todo_instance = TodoModel.query.get(todo.id)
+        print(todo_instance.title)
+        todo_instance.title = todo.title
+        print(todo_instance.title)
+        todo_instance.desc = todo.desc
+        todo_instance.save()
+        return todo_instance
+
+
+class Mutation(graphene.ObjectType):
+    create_todo = CreateTodo.Field()
+    update_todo = UpdateTodo.Field()
+
+
+schema = Schema(query=Query, mutation=Mutation)
 print(schema)
+
+query = """
+  query AllPosts {
+  listTodos {
+    success
+    errors
+    post {
+      id
+      title 
+      desc
+    }
+  }
+}
+"""
+mutation = """
+            mutation newTodo {
+              createTodo(todo: {title:"Go to the dentist", desc:"24-10-2020"}) {
+                    title
+              }
+            }
+"""
+
+
+def test_query():
+    result = schema.execute(query)
+    assert not result.errors
+    # assert result.data == {"address": {"latlng": "(32.2,12.0)"}}
+    print(result.data)
+
+
+def test_mutation():
+    result = schema.execute(mutation)
+    # assert not result.errors
+    # assert result.data == {"createAddress": {"latlng": "(32.2,12.0)"}}
+    print(result.errors,'errors')
+    print(result.data)
+#
+# test_mutation()
+# test_query()

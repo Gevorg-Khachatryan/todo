@@ -29,6 +29,7 @@ def list_view():
 @app.route("/graphql", methods=["POST"])
 def graphql_server():
     data = request.get_json()
-    result = schema.execute(data['query'], context=Todo.query.all())
+    print(data.get('mutation'))
+    result = schema.execute(data.get('query') or data.get('mutation'), context=Todo.query.all())
     status_code = 200 if result else 400
     return jsonify(result.data), status_code

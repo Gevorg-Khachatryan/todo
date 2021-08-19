@@ -57,12 +57,12 @@
             </div>
 
             <div class="content">
-                <form action="/graphql" method="post">
+<!--                <form action="/graphql" method="post">-->
                     <input type="text" name="query" value="query" hidden>
                     <input type="text" name="title" value="sssss">
                     <input type="text" name="desc" value="sssssss">
-                    <button type="submit">ok</button>
-                </form>
+                    <button id="add_todo" type="submit">ok</button>
+<!--                </form>-->
                 <hr>
                 <table id="list_todos">
 
@@ -79,18 +79,16 @@
            'Content-Type': 'application/json',
            'Accept': 'application/json',
          },
-         body: JSON.stringify({query: "{ listTodos {success errors post {id title desc } }}"})
+         body: JSON.stringify({query: "{ listTodos {success errors post {id title desc completed} }}"})
         })
         .then(r => r.json())
         .then(data => f(data))
         // .then(data => console.log('data returned:', data));
 function f(data){
-        console.log(data)
         let success
         if (data.listTodos) {
             success = data.listTodos.success
         }else{
-            console.log(data)
             success = data.getTodo.success
         }
     let list_todos = document.getElementById('list_todos')
@@ -100,22 +98,41 @@ function f(data){
             list_todos.innerHTML += '<tr class="info" '+ 'data-id="'+ element.id +'" >' +
                                     '<td>'+ element.title +'</td>' +
                                     '<td>'+ element.desc +'</td>' +
-                                    '<td><select> ' +
-                                        '<option class="complete" >Completed</option>' +
-                                        '<option class="uncomplete" >Uncompleted</option>' +
-                                        '<option class="delete" >Delete</option>' +
+                                    '<td><select class="actions"> ' +
+                                        '<option value="complete" class="complete" '+ (element.completed ? 'selected' : '') +'>Completed</option>' +
+                                        '<option value="uncomplete" class="uncomplete" '+ (!element.completed ? 'selected' : '') +'>Uncompleted</option>' +
+                                        '<option value="delete" class="delete" >Delete</option>' +
                                     '</select></td>'+
                                     '</tr>'
         })
+            let elements2 = document.getElementsByClassName("actions")
+    for (var i = 0; i < elements2.length; i++) {
+            elements2[i].addEventListener('change', (element) => {
+                console.log('click2')
+                console.log('click21',element)
+                fetch('/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: " mutation updateTodo {" +
+                            'updateTodo(todo: {id:"611a88fe1ec27417c88b0553", title:"66666", desc:"24-10-2020"}) {title}}',
+                        type: element.value
+                    })
+                })
+                    .then(r => r.json())
+                    .then(data => console.log('data returned:', data));
+
+            })
+    }
     }
     console.log(data)
-    console.log(data.listTodos)
     let elements = document.getElementsByClassName("info")
-    console.log(elements)
     for (var i = 0; i < elements.length; i++) {
 
         elements[i].addEventListener('click', (element) => {
-        console.log(element.target.parentElement)
         console.log(element.target.parentElement.dataset.id)
         fetch('/graphql', {
             method: 'POST',
@@ -133,5 +150,40 @@ function f(data){
         })
     }
 }
+let el = document.getElementById("add_todo")
+// el.addEventListener('click', (element) => {
+//         console.log('click')
+//         fetch('/graphql', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Accept': 'application/json',
+//             },
+//             // body: JSON.stringify({query: " mutation changeTodo {" +
+//             //   'updateTodo(todo: {id:"611a88fe1ec27417c88b0553", title:"Go to the dentist", desc:"24-10-2020"}) {title}}'
+//             // })
+//             body: JSON.stringify({query: " mutation newTodo {" +
+//               'createTodo(todo: {title:"Go to the dentist", desc:"24-10-2020"}) {title}}'
+//             })
+//                     })
+//             .then(r => r.json())
+//             .then(data => console.log('data returned:', data));
+//         })
+el.addEventListener('click', (element) => {
+        console.log('click')
+        fetch('/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({query: " mutation updateTodo {" +
+              'updateTodo(todo: {id:"611a88fe1ec27417c88b0553", title:"66666", desc:"24-10-2020"}) {title}}'
+                })
+            })
+            .then(r => r.json())
+            .then(data => console.log('data returned:', data));
+        })
+
 </script>
 </html>
