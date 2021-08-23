@@ -98,7 +98,7 @@ function f(data){
             list_todos.innerHTML += '<tr class="info" '+ 'data-id="'+ element.id +'" >' +
                                     '<td>'+ element.title +'</td>' +
                                     '<td>'+ element.desc +'</td>' +
-                                    '<td><select class="actions"> ' +
+                                    '<td><select class="actions" data-id="'+ element.id +'"> ' +
                                         '<option value="complete" class="complete" '+ (element.completed ? 'selected' : '') +'>Completed</option>' +
                                         '<option value="uncomplete" class="uncomplete" '+ (!element.completed ? 'selected' : '') +'>Uncompleted</option>' +
                                         '<option value="delete" class="delete" >Delete</option>' +
@@ -107,23 +107,38 @@ function f(data){
         })
             let elements2 = document.getElementsByClassName("actions")
     for (var i = 0; i < elements2.length; i++) {
-            elements2[i].addEventListener('change', (element) => {
+            elements2[i].addEventListener('change', (e) => {
                 console.log('click2')
-                console.log('click21',element)
-                fetch('/graphql', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        query: " mutation updateTodo {" +
-                            'updateTodo(todo: {id:"611a88fe1ec27417c88b0553", title:"66666", desc:"24-10-2020"}) {title}}',
-                        type: element.value
+                console.log('click21',e)
+                if (e.target.value != 'delete'){
+                    fetch('/graphql', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: " mutation updateTodo {" +
+                                'updateTodo(todo: {id:"'+ e.target.getAttribute("data-id") +'"' +
+                                'completed:"'+e.target.value+'"}) {title}}',
+                        })
                     })
-                })
                     .then(r => r.json())
                     .then(data => console.log('data returned:', data));
+                }else{
+                    fetch('/graphql', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: ' mutation deleteTodo {deleteTodo(id: "'+ e.target.getAttribute("data-id") +'") {success}}',
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(data => console.log('data deleted:', data));
+                }
 
             })
     }

@@ -43,7 +43,6 @@ class Query(ObjectType):
         return payload
 
     def resolve_get_todo(root, info, id):
-        print(id, root, info,'//////////////////////////////////////////////////////////////////////////////////')
         try:
             todo = TodoModel.query.get(id)
 
@@ -62,8 +61,9 @@ class Query(ObjectType):
 
 class TodoInput(graphene.InputObjectType):
     id = graphene.String()
-    title = graphene.String()
-    desc = graphene.String()
+    title = graphene.String(required=False)
+    desc = graphene.String(required=False)
+    completed = graphene.String(required=False)
 
 
 class CreateTodo(graphene.Mutation):
@@ -73,7 +73,6 @@ class CreateTodo(graphene.Mutation):
     Output = Todo
 
     def mutate(root, info,todo):
-        print('////////////////////////1')
         new_todo = TodoModel(title=todo.title, desc=todo.desc)
         new_todo.save()
         return new_todo
@@ -87,23 +86,37 @@ class UpdateTodo(graphene.Mutation):
     Output = Todo
 
     def mutate(root, info, todo):
-        print('////////////////////////2')
         todo_instance = TodoModel.query.get(todo.id)
-        print(todo_instance.title)
-        todo_instance.title = todo.title
-        print(todo_instance.title)
-        todo_instance.desc = todo.desc
+        if todo.title:
+            todo_instance.title = todo.title
+        if todo.desc:
+            todo_instance.desc = todo.desc
+
+        todo_instance.completed = True if todo.completed == 'complete' else False
         todo_instance.save()
         return todo_instance
+
+
+class DeleteTodo(graphene.Mutation):
+
+    class Arguments:
+        id = graphene.ID()
+    success = graphene.Boolean()
+    @classmethod
+    def mutate(cls,root, info, id):
+        obj = TodoModel.query.get(id)
+        obj.remove()
+        cls.success = True
+        return cls(success=True)
 
 
 class Mutation(graphene.ObjectType):
     create_todo = CreateTodo.Field()
     update_todo = UpdateTodo.Field()
+    delete_todo = DeleteTodo.Field()
 
 
 schema = Schema(query=Query, mutation=Mutation)
-print(schema)
 
 query = """
   query AllPosts {
@@ -118,11 +131,21 @@ query = """
   }
 }
 """
+# mutation = """
+#             mutation newTodo {
+#               createTodo(todo: {title:"Go to the dentist", desc:"24-10-2020"}) {
+#                     title
+#               }
+#             }
+# """
+# mutation = """
+#              mutation updateTodo {
+#                updateTodo(todo: {id:"611a88fe1ec27417c88b0553", title:"66666", desc:"24-10-2020,"
+#                completed:"complete"}) {title}}
+# """
 mutation = """
-            mutation newTodo {
-              createTodo(todo: {title:"Go to the dentist", desc:"24-10-2020"}) {
-                    title
-              }
+            mutation deleteTodo {
+              deleteTodo(id: "611a890f1ec2741b8c0d84d3") {success}
             }
 """
 
