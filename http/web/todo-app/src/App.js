@@ -48,18 +48,20 @@ class MyComponent extends React.Component {
                             },
                             <td>{element.title}</td>,
                             <td>{element.desc}</td>,
-                            <select className="actions" data-id={element.id}>
-                                <option value="complete" className="complete" selected={element.completed ?  true : false}>Completed
+                            <td><select className="actions" data-id={element.id} onChange={this.changeTodoStatus}>
+                                <option value="complete" className="complete"
+                                        selected={element.completed ? true : false}>Completed
                                 </option>
-                                <option value="uncomplete" className="uncomplete" selected={!element.completed ? true : false}>Uncompleted
+                                <option value="uncomplete" className="uncomplete"
+                                        selected={!element.completed ? true : false}>Uncompleted
                                 </option>
                                 <option value="delete" className="delete">Delete</option>
-                            </select>
-                            )
+                            </select></td>
+                        )
                         rows.push(row)
                     })
-                    ReactDOM.render(rows, list_todos)
-                    //
+
+                    ReactDOM.render(<tbody>{rows}</tbody>, list_todos)
                     // let elements2 = document.getElementsByClassName("actions")
                     // for (var i = 0; i < elements2.length; i++) {
                     //     elements2[i].addEventListener('change', (e) => {
@@ -129,6 +131,41 @@ class MyComponent extends React.Component {
 
         return true;
 
+    }
+
+    changeTodoStatus(e) {
+        let element = e.target
+        let id = element.dataset.id
+        console.log(id)
+        if (element.value != 'delete') {
+            fetch('http://localhost:5000/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: " mutation updateTodo {" +
+                        'updateTodo(todo: {id:"' + id + '"' +
+                        'completed:"' + element.value + '"}) {title}}',
+                })
+            })
+                .then(r => r.json())
+                .then(data => console.log('data returned:', data));
+        } else {
+            fetch('/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: ' mutation deleteTodo {deleteTodo(id: "' + id + '") {success}}',
+                })
+            })
+                .then(r => r.json())
+                .then(data => console.log('data deleted:', data));
+        }
     }
 }
 

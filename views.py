@@ -31,5 +31,4 @@ def graphql_server():
     data = request.get_json()
     result = schema.execute(data.get('query'), context=Todo.query.all(),info=data.get('type'))
     status_code = 200 if result else 400
-    print(data.get('type'),data.get('query') ,'4444')
     return jsonify(result.data), status_code
