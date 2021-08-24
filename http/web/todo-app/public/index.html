@@ -25,47 +25,6 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
-        <style>
-        .header{
-            border: solid 1px black;
-            height: 60px;
-            width: 100%;
-            font-size: 30px;
-            text-align: center;
-        }
-        .flex-container{
-            display: flex;
-            min-height: 800px;
-        }
-        .actions{
-            border: solid 1px black;
-            height: 100%;
-            width: 20%;
-            font-size: 30px;
-            text-align: center;
-            flex-grow: 1
-        }
-        .content{
-            border: solid 1px black;
-            height: 100%;
-            width: 20%;
-            font-size: 30px;
-            text-align: center;
-            flex-grow: 8
-        }
-        .button{
-            display: block;
-            width: 80%;
-            margin: 20px;
-        }
-        table,tr {
-            border-collapse: collapse;
-            border: solid 1px black;
-            width: 90%;
-            margin: auto
-        ;
-        }
-    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -77,21 +36,12 @@
 
         <div class="flex-container">
             <div class="actions">
-                <button class="button">Add</button>
-                <button class="button">List</button>
+<!--                <button id="show_add_todo" class="button">Add</button>-->
+<!--                <button id="show_todo_list" class="button">List</button>-->
             </div>
 
-            <div class="content">
-<!--                <form action="/graphql" method="post">-->
-                    <input type="text" name="query" value="query" hidden>
-                    <input type="text" name="title" value="sssss">
-                    <input type="text" name="desc" value="sssssss">
-                    <button id="add_todo" type="submit">ok</button>
-<!--                </form>-->
-                <hr>
-                <table id="list_todos">
+            <div id="content">
 
-                </table>
             </div>
         </div>
 

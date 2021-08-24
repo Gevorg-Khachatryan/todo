@@ -17,6 +17,107 @@ class MyComponent extends React.Component {
     }
 
     componentDidMount() {
+        this.homePage()
+        let actions = document.getElementsByClassName('actions')
+        // show_add_todo.onchange = this.showAddTodo
+        ReactDOM.render([<button id="show_add_todo" className="button" onClick={this.showAddTodo}>Add</button>,
+            <button id="show_todo_list" className="button"
+                    onClick={this.homePage.bind(this)}>List</button>], actions[0])
+
+    }
+
+    render() {
+        const {error, isLoaded, items} = this.state;
+        console.log(this.state.data, 123);
+
+        return true;
+
+    }
+
+    changeTodoStatus(e) {
+        let element = e.target
+        let id = element.dataset.id
+        console.log(id)
+        if (element.value != 'delete') {
+            fetch('http://localhost:5000/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: " mutation updateTodo {" +
+                        'updateTodo(todo: {id:"' + id + '"' +
+                        'completed:"' + element.value + '"}) {title}}',
+                })
+            })
+                .then(r => r.json())
+                .then(data => console.log('data returned:', data));
+        } else {
+            fetch('/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: ' mutation deleteTodo {deleteTodo(id: "' + id + '") {success}}',
+                })
+            })
+                .then(r => r.json())
+                .then(data => console.log('data deleted:', data));
+        }
+    }
+
+    showAddTodo(e) {
+        let container = document.getElementById('content')
+        console.log(container)
+        ReactDOM.render([React.createElement('input', {type: 'text', name: 'title'}),
+            React.createElement('input', {type: 'text', name: 'desc'}),
+            <button id="add_todo" type="submit" onClick={this.addTodo}>ok</button>], container)
+    }
+
+    showUpdateTodo(e) {
+        let container = document.getElementById('content')
+        console.log()
+        this.setState({
+            id: e.target.parentElement.getAttribute('data_id')
+        })
+        ReactDOM.render([React.createElement('input', {type: 'text', name: 'title', id:'todo_title'}),
+            React.createElement('input', {type: 'text', name: 'desc', id:'todo_desc'}),
+            <button  onClick={this.updateTodo.bind(this)}>ok</button>], container)
+    }
+
+    addTodo(e) {
+        let container = document.getElementById('content')
+        ReactDOM.render([React.createElement('input', {type: 'text', name: 'title'}),
+            React.createElement('input', {type: 'text', name: 'desc'}),
+            <button  onClick={this.addTodo}>ok</button>], container)
+    }
+
+    updateTodo(e) {
+        let container = document.getElementById('content')
+        console.log(container,this.state.id,'444bbb')
+        fetch('http://localhost:5000/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                query: " mutation updateTodo {" +
+                    'updateTodo(todo: {' +
+                    'id:"' + this.state.id + '"' +
+                    'title:"' + document.getElementById('todo_title').value + '"' +
+                    'desc:"' + document.getElementById('todo_desc').value + '"' +
+                    'completed:"' + e.target.value + '"}) {title}}',
+            })
+        })
+            .then(r => r.json())
+            .then(data => console.log('data returned:', data));
+    }
+
+    homePage(e) {
         fetch('http://localhost:5000/graphql', {
             method: 'POST',
             headers: {
@@ -34,7 +135,7 @@ class MyComponent extends React.Component {
                 } else {
                     success = data.getTodo.success
                 }
-                let list_todos = document.getElementById('list_todos')
+                let list_todos = document.getElementById('content')
                 if (success) {
                     let todos = data.listTodos.post
                     let rows = []
@@ -45,10 +146,11 @@ class MyComponent extends React.Component {
                         let row = React.createElement('tr', {
                                 className: 'info',
                                 data_id: element.id,
+                                onClick: this.showUpdateTodo.bind(this)
                             },
                             <td>{element.title}</td>,
                             <td>{element.desc}</td>,
-                            <td><select className="actions" data-id={element.id} onChange={this.changeTodoStatus}>
+                            <td><select data-id={element.id} onChange={this.changeTodoStatus}>
                                 <option value="complete" className="complete"
                                         selected={element.completed ? true : false}>Completed
                                 </option>
@@ -60,8 +162,9 @@ class MyComponent extends React.Component {
                         )
                         rows.push(row)
                     })
-
-                    ReactDOM.render(<tbody>{rows}</tbody>, list_todos)
+                    ReactDOM.render(<table id="list_todos">
+                        <tbody>{rows}</tbody>
+                    </table>, list_todos)
                     // let elements2 = document.getElementsByClassName("actions")
                     // for (var i = 0; i < elements2.length; i++) {
                     //     elements2[i].addEventListener('change', (e) => {
@@ -123,49 +226,6 @@ class MyComponent extends React.Component {
                 //     })
                 // }
             });
-    }
-
-    render() {
-        const {error, isLoaded, items} = this.state;
-        console.log(this.state.data, 123);
-
-        return true;
-
-    }
-
-    changeTodoStatus(e) {
-        let element = e.target
-        let id = element.dataset.id
-        console.log(id)
-        if (element.value != 'delete') {
-            fetch('http://localhost:5000/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    query: " mutation updateTodo {" +
-                        'updateTodo(todo: {id:"' + id + '"' +
-                        'completed:"' + element.value + '"}) {title}}',
-                })
-            })
-                .then(r => r.json())
-                .then(data => console.log('data returned:', data));
-        } else {
-            fetch('/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    query: ' mutation deleteTodo {deleteTodo(id: "' + id + '") {success}}',
-                })
-            })
-                .then(r => r.json())
-                .then(data => console.log('data deleted:', data));
-        }
     }
 }
 
