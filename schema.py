@@ -90,8 +90,8 @@ class UpdateTodo(graphene.Mutation):
             todo_instance.title = todo.title
         if todo.desc:
             todo_instance.desc = todo.desc
-
-        todo_instance.completed = True if todo.completed == 'complete' else False
+        if todo.completed:
+            todo_instance.completed = True if todo.completed == 'complete' else False
         todo_instance.save()
         return todo_instance
 
