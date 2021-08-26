@@ -1,7 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
 import React from "react";
-import ReactDOM from "react-dom";
 
 
 class MyComponent extends React.Component {
@@ -16,13 +15,12 @@ class MyComponent extends React.Component {
     }
 
     componentDidMount() {
-        let x = this.homePage()
-
-        console.log(this.state.data, x)
+        this.getTodosList()
     }
 
     render() {
         const data = this.state.data
+        const inputs_section = this.state.inputs_section
         return <>
             <div className="header">
                 <div className="title">TODO</div>
@@ -34,7 +32,7 @@ class MyComponent extends React.Component {
                             onClick={this.showAddTodo.bind(this)}>Add
                     </button>
                     <button id="show_todo_list" className="button"
-                            onClick={this.homePage.bind(this)}>List
+                            onClick={this.getTodosList.bind(this)}>List
                     </button>
                 </div>
 
@@ -61,6 +59,7 @@ class MyComponent extends React.Component {
                         ))}
                         </tbody>
                     </table>
+                    {inputs_section}
                 </div>
             </div>
         </>
@@ -69,7 +68,7 @@ class MyComponent extends React.Component {
     changeTodoStatus(e) {
         let element = e.target
         let id = element.dataset.id
-        if (element.value != 'delete') {
+        if (element.value !== 'delete') {
             fetch('http://localhost:5000/graphql', {
                 method: 'POST',
                 headers: {
@@ -82,7 +81,7 @@ class MyComponent extends React.Component {
                         'completed:"' + element.value + '"}) {title}}',
                 })
             })
-                .then(this.homePage.bind(this))
+                .then(this.getTodosList.bind(this))
         } else {
             fetch('http://localhost:5000/graphql', {
                 method: 'POST',
@@ -94,39 +93,31 @@ class MyComponent extends React.Component {
                     query: ' mutation deleteTodo {deleteTodo(id: "' + id + '") {success}}',
                 })
             })
-                .then(this.homePage.bind(this))
+                .then(this.getTodosList.bind(this))
         }
     }
 
     showAddTodo(e) {
         let container = document.getElementById('content')
-        console.log(container)
-        ReactDOM.render([React.createElement('input', {type: 'text', name: 'title', id: 'todo_title'}),
-            React.createElement('input', {type: 'text', name: 'desc', id: 'todo_desc'}),
-            <button id="add_todo" type="submit" onClick={this.addTodo.bind(this)}>ok</button>], container)
+        this.setState({data:[],
+                inputs_section:[
+                <input type="text" name="title" id="todo_title"/>,
+                <input type="text" name="desc" id="todo_desc"/>,
+                <button id="add_todo" type="submit" onClick={this.addTodo.bind(this)}>ok</button>
+                ]
+        })
     }
 
     showUpdateTodo(e) {
-        if (e.target.type != 'select-one') {
-            let container = document.getElementById('content')
+        if (e.target.type !== 'select-one') {
             this.setState({
-                id: e.target.parentElement.getAttribute('data_id')
+                id: e.target.parentElement.getAttribute('data-id'),
+                inputs_section:[
+                <input type="text" name="title" id="todo_title" defaultValue={e.target.parentElement.getAttribute('data-title')}/>,
+                <input type="text" name="desc" id="todo_desc" defaultValue={e.target.parentElement.getAttribute('data-desc')}/>,
+                <button onClick={this.updateTodo.bind(this)}>ok</button>],
+                data:[]
             })
-            ReactDOM.render([React.createElement('input',
-                {
-                    type: 'text',
-                    name: 'title',
-                    id: 'todo_title',
-                    defaultValue: e.target.parentElement.getAttribute('data_title')
-                }),
-                React.createElement('input',
-                    {
-                        type: 'text',
-                        name: 'desc',
-                        id: 'todo_desc',
-                        defaultValue: e.target.parentElement.getAttribute('data_desc')
-                    }),
-                <button onClick={this.updateTodo.bind(this)}>ok</button>], container)
         }
     }
 
@@ -144,7 +135,7 @@ class MyComponent extends React.Component {
                     'desc:"' + document.getElementById('todo_desc').value + '"}) {title}}'
             })
         })
-            .then(this.homePage.bind(this))
+            .then(this.getTodosList.bind(this))
     }
 
     updateTodo(e) {
@@ -163,10 +154,11 @@ class MyComponent extends React.Component {
                     'completed:"' + e.target.value + '"}) {title}}',
             })
         })
-            .then(this.homePage.bind(this))
+            .then(this.getTodosList.bind(this))
     }
 
-    homePage(e) {
+    getTodosList(e) {
+        this.setState({'data': []})
 
         fetch('http://localhost:5000/graphql', {
             method: 'POST',
@@ -178,58 +170,17 @@ class MyComponent extends React.Component {
         })
             .then(response => response.json())
             .then(data => {
-                // this.setState({data: data})
-                let rows = []
-
                 let success
                 if (data.listTodos) {
                     success = data.listTodos.success
                 } else {
                     success = data.getTodo.success
                 }
-                let list_todos = document.getElementById('content')
                 if (success) {
                     let todos = data.listTodos.post
-                    this.setState({'data': todos})
-                    // todos.forEach((element, index, array) => {
-                    //     let row = React.createElement('tr', {
-                    //             className: 'info',
-                    //             data_id: element.id,
-                    //             data_title: element.title,
-                    //             data_desc: element.desc,
-                    //             onClick: this.showUpdateTodo.bind(this)
-                    //         },
-                    //         <td>{element.title}</td>,
-                    //         <td>{element.desc}</td>,
-                    //         <td><select data-id={element.id} onChange={this.changeTodoStatus.bind(this)}
-                    //                     value={element.completed ? 'complete' : 'uncomplete'}>
-                    //             <option value="complete" className="complete">Completed
-                    //             </option>
-                    //             <option value="uncomplete" className="uncomplete">Uncompleted
-                    //             </option>
-                    //             <option value="delete" className="delete">Delete</option>
-                    //         </select></td>
-                    //     )
-                    //     rows.push(row)
-                    // })
-                    // this.setState({data: rows})
-
-                    // ReactDOM.render(<table id="list_todos">
-                    //     <tbody>{rows}</tbody>
-                    // </table>, list_todos)
+                    this.setState({'data': todos, inputs_section:[]})
                 }
             });
-        // return (
-        //
-        //     <table>
-        //         <tbody>
-        //         <tr>sada</tr>
-        //         {this.state.data.map((item, index) => (
-        //             {item}
-        //         ))}
-        //         </tbody>
-        //     </table>
-        // )
     }
 }
 
