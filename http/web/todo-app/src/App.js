@@ -62,6 +62,7 @@ class MyComponent extends React.Component {
                     {inputs_section}
                 </div>
             </div>
+
         </>
     }
 
